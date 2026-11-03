@@ -1,0 +1,21 @@
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/*.csproj
+/*.sln
+/*.slnx
+.vs/
+.idea/
+*.apk
+*.aab
+# CoreTests(dotnet) 산출물
+/CoreTests/bin/
+/CoreTests/obj/
+/.utmp/

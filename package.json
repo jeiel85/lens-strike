@@ -1,7 +1,7 @@
 {
   "name": "lens-strike",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "렌즈 스트라이크 — 폰 카메라로 상대를 비추고 쏘는 설치 없는 AR 슈팅 웹 게임",
   "scripts": {

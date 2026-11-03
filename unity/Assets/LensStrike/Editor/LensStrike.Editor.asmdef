@@ -1,0 +1,24 @@
+{
+    "name": "LensStrike.Editor",
+    "rootNamespace": "LensStrike.EditorTools",
+    "references": [
+        "LensStrike.App",
+        "Unity.XR.ARFoundation",
+        "Unity.XR.CoreUtils",
+        "Unity.XR.Management",
+        "Unity.XR.Management.Editor",
+        "Unity.XR.ARCore",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

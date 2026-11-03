@@ -1,0 +1,26 @@
+{
+    "name": "LensStrike.App",
+    "rootNamespace": "LensStrike.App",
+    "references": [
+        "LensStrike.Core",
+        "Unity.XR.ARFoundation",
+        "Unity.XR.CoreUtils",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "Unity.Collections",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Multiplayer",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
