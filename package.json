@@ -1,0 +1,26 @@
+{
+  "name": "lens-strike",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "렌즈 스트라이크 — 폰 카메라로 상대를 비추고 쏘는 설치 없는 AR 슈팅 웹 게임",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "author": "jeiel85",
+  "license": "MIT",
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.0",
+    "peerjs": "^1.5.5",
+    "qrcode-generator": "^2.0.4"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
+  }
+}

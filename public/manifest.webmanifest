@@ -1,0 +1,12 @@
+{
+  "name": "렌즈 스트라이크",
+  "short_name": "렌즈스트라이크",
+  "description": "폰 카메라로 상대를 비추고 화면을 터치해 쏘는 AR 슈팅 게임",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
