@@ -95,23 +95,31 @@ namespace LensStrike.App
             result.Rematch = () => (play?.Link as HostSide)?.StartMatch();
         }
 
+        /// <summary>
+        /// AR 세션은 ARSession 컴포넌트가 스스로 시작한다(필요하면 Google Play AR 서비스 설치까지).
+        /// 여기서는 결과만 기다려 안내한다. 시작에 실패하면 ARSession이 스스로 꺼진다.
+        /// </summary>
         private IEnumerator CheckAr()
         {
             setup.SetStatus("AR을 준비하는 중…");
-            if (ARSession.state == ARSessionState.None || ARSession.state == ARSessionState.CheckingAvailability)
-                yield return ARSession.CheckAvailability();
-            if (ARSession.state == ARSessionState.Unsupported)
+            var session = FindFirstObjectByType<ARSession>();
+            var deadline = Time.unscaledTime + 20f;
+            while (Time.unscaledTime < deadline)
             {
-                setup.SetStatus("이 기기는 AR(Google Play AR 서비스)을 지원하지 않습니다.", true);
-                setup.SetBusy(true);
-                yield break;
+                if (ARSession.state >= ARSessionState.SessionInitializing)
+                {
+                    setup.SetStatus("준비 완료");
+                    yield break;
+                }
+                if (ARSession.state == ARSessionState.Unsupported || session == null || !session.enabled)
+                {
+                    setup.SetStatus("이 기기는 AR(Google Play AR 서비스)을 지원하지 않습니다.", true);
+                    setup.SetBusy(true);
+                    yield break;
+                }
+                yield return null;
             }
-            if (ARSession.state == ARSessionState.NeedsInstall)
-            {
-                setup.SetStatus("Google Play AR 서비스를 설치해야 합니다.");
-                yield return ARSession.Install();
-            }
-            setup.SetStatus(ARSession.state >= ARSessionState.Ready ? "준비 완료" : "AR을 시작하지 못했습니다. 카메라 권한을 확인해 주세요.", ARSession.state < ARSessionState.Ready);
+            setup.SetStatus("AR을 시작하지 못했습니다. 카메라 권한과 Google Play AR 서비스를 확인해 주세요.", true);
         }
 
         private async void Run(Func<Task<GameLink>> open)
@@ -261,6 +269,10 @@ namespace LensStrike.App
             scaler.matchWidthOrHeight = Screen.width > Screen.height ? 1f : 0f;
             scaler.referenceResolution = Screen.width > Screen.height ? new Vector2(1920, 1080) : new Vector2(1080, 1920);
             toast.gameObject.SetActive(Time.unscaledTime < toastUntil);
+            var landscape = Screen.width > Screen.height;
+            setup.Sheet.Layout(landscape);
+            lobby.Sheet.Layout(landscape);
+            result.Sheet.Layout(landscape);
             play?.Update();
         }
 

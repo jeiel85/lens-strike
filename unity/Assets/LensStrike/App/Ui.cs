@@ -90,6 +90,8 @@ namespace LensStrike.App
         {
             var img = Image(name, parent, bg, raycast: true);
             var btn = img.gameObject.AddComponent<Button>();
+            // 런타임 AddComponent는 에디터의 Reset()을 거치지 않아 대상 그래픽이 비어 있다
+            btn.targetGraphic = img;
             var colors = btn.colors;
             colors.highlightedColor = new Color(1, 1, 1, 0.95f);
             colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1);
@@ -107,6 +109,7 @@ namespace LensStrike.App
         {
             var bg = Image(name, parent, new Color(1, 1, 1, 0.08f), raycast: true);
             var field = bg.gameObject.AddComponent<InputField>();
+            field.targetGraphic = bg;
             var text = Text("Text", bg.transform, "", fontSize, Color.white, TextAnchor.MiddleCenter);
             text.supportRichText = false;
             Stretch(text.rectTransform, 20, 4, 20, 4);

@@ -41,22 +41,66 @@ namespace LensStrike.EditorTools
             Debug.Log("[LensStrike] 프로젝트 구성 완료");
         }
 
+        /// <summary>
+        /// 릴리스 서명 정보. 저장소 밖(git 제외)의 ../.keystore/release-signing.properties 에서 읽는다.
+        /// 없으면 디버그 키로 서명한다(개발용).
+        /// </summary>
+        private const string SigningProperties = "../.keystore/release-signing.properties";
+
         [MenuItem("LensStrike/Build Android")]
         public static void BuildAndroid()
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
             Directory.CreateDirectory(Path.GetDirectoryName(ApkPath)!);
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            var signed = ApplyReleaseSigning();
+            try
             {
-                scenes = new[] { ScenePath },
-                locationPathName = ApkPath,
-                target = BuildTarget.Android,
-                targetGroup = BuildTargetGroup.Android,
-                options = BuildOptions.None,
-            });
-            var s = report.summary;
-            Debug.Log($"[LensStrike] 빌드 결과: {s.result}, 크기 {s.totalSize / 1024 / 1024}MB, 오류 {s.totalErrors}");
-            if (s.result != BuildResult.Succeeded) throw new Exception($"안드로이드 빌드 실패: {s.result}");
+                var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+                {
+                    scenes = new[] { ScenePath },
+                    locationPathName = ApkPath,
+                    target = BuildTarget.Android,
+                    targetGroup = BuildTargetGroup.Android,
+                    options = BuildOptions.None,
+                });
+                var s = report.summary;
+                Debug.Log($"[LensStrike] 빌드 결과: {s.result}, 서명 {(signed ? "릴리스 키" : "디버그 키")}, 오류 {s.totalErrors}");
+                if (s.result != BuildResult.Succeeded) throw new Exception($"안드로이드 빌드 실패: {s.result}");
+            }
+            finally
+            {
+                // 키스토어 경로·비밀번호를 프로젝트 설정에 남기지 않는다
+                PlayerSettings.Android.useCustomKeystore = false;
+                PlayerSettings.Android.keystoreName = "";
+                PlayerSettings.Android.keystorePass = "";
+                PlayerSettings.Android.keyaliasName = "";
+                PlayerSettings.Android.keyaliasPass = "";
+                AssetDatabase.SaveAssets();
+            }
+        }
+
+        private static bool ApplyReleaseSigning()
+        {
+            var path = Path.GetFullPath(SigningProperties);
+            if (!File.Exists(path))
+            {
+                Debug.LogWarning("[LensStrike] 릴리스 서명 정보가 없어 디버그 키로 서명합니다.");
+                return false;
+            }
+            var props = File.ReadAllLines(path)
+                .Where(l => l.Contains('=') && !l.TrimStart().StartsWith("#"))
+                .Select(l => l.Split(new[] { '=' }, 2))
+                .ToDictionary(p => p[0].Trim(), p => p[1].Trim());
+            string Need(string key) =>
+                props.TryGetValue(key, out var v) && v.Length > 0 ? v : throw new Exception($"서명 정보에 {key}가 없습니다.");
+            var store = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(path)!, Need("storeFile")));
+            if (!File.Exists(store)) throw new Exception("키스토어 파일을 찾을 수 없습니다.");
+            PlayerSettings.Android.useCustomKeystore = true;
+            PlayerSettings.Android.keystoreName = store;
+            PlayerSettings.Android.keystorePass = Need("storePassword");
+            PlayerSettings.Android.keyaliasName = Need("keyAlias");
+            PlayerSettings.Android.keyaliasPass = Need("keyPassword");
+            return true;
         }
 
         /// <summary>배치 모드용: 구성 후 빌드. 실패하면 0이 아닌 종료 코드로 끝난다.</summary>

@@ -14,6 +14,8 @@ namespace LensStrike.App
         public readonly RectTransform Root;
         public readonly RectTransform Content;
         private readonly RectTransform panel;
+        private readonly bool bottom;
+        private bool? landscape;
 
         public Sheet(Transform parent, string name, bool dimBackground, bool bottom)
         {
@@ -21,18 +23,8 @@ namespace LensStrike.App
             Root = Ui.Stretch(bg.rectTransform);
             var p = Ui.Image("Panel", Root, Ui.Panel, raycast: true);
             panel = p.rectTransform;
-            if (bottom)
-            {
-                // 대기실은 화면 아래쪽만 덮어서, 가운데 조준선으로 상대를 비춰 볼 수 있게 한다
-                panel.anchorMin = new Vector2(0, 0);
-                panel.anchorMax = new Vector2(1, 0.46f);
-                panel.offsetMin = new Vector2(24, 24);
-                panel.offsetMax = new Vector2(-24, 0);
-            }
-            else
-            {
-                Ui.Stretch(panel, 40, 80, 40, 80);
-            }
+            this.bottom = bottom;
+            Layout(Screen.width > Screen.height);
             var viewport = Ui.Rect("Viewport", panel);
             Ui.Stretch(viewport, 40, 40, 40, 40);
             viewport.gameObject.AddComponent<RectMask2D>();
@@ -56,6 +48,35 @@ namespace LensStrike.App
         }
 
         public void Show(bool on) => Root.gameObject.SetActive(on);
+
+        /// <summary>
+        /// 화면 방향에 맞춰 패널 자리를 정한다. 대기실·결과(bottom)는 가운데 조준선을 가리지 않도록
+        /// 세로 화면에서는 아래쪽, 가로 화면에서는 왼쪽에 둔다.
+        /// </summary>
+        public void Layout(bool isLandscape)
+        {
+            if (landscape == isLandscape) return;
+            landscape = isLandscape;
+            if (!bottom)
+            {
+                Ui.Stretch(panel, isLandscape ? 160 : 40, isLandscape ? 30 : 80, isLandscape ? 160 : 40, isLandscape ? 30 : 80);
+                return;
+            }
+            if (isLandscape)
+            {
+                panel.anchorMin = new Vector2(0, 0);
+                panel.anchorMax = new Vector2(0.42f, 1);
+                panel.offsetMin = new Vector2(24, 24);
+                panel.offsetMax = new Vector2(0, -220);
+            }
+            else
+            {
+                panel.anchorMin = new Vector2(0, 0);
+                panel.anchorMax = new Vector2(1, 0.46f);
+                panel.offsetMin = new Vector2(24, 24);
+                panel.offsetMax = new Vector2(-24, 0);
+            }
+        }
 
         public T Add<T>(T component, float height) where T : Component
         {
@@ -132,6 +153,7 @@ namespace LensStrike.App
             actions.Add(Ui.Button("Practice", row, "혼자 연습", new Color(1, 1, 1, 0.1f), Color.white, () => Practice?.Invoke()));
             actions.Add(Ui.Button("Host", row, "방 만들기", Ui.Accent, new Color(0.1f, 0.08f, 0.02f), () => Host?.Invoke()));
             var joinRow = Sheet.Row(110);
+            joinRow.GetComponent<HorizontalLayoutGroup>().childForceExpandWidth = false;
             code = Ui.Input("Code", joinRow, "참가 코드", 12);
             code.characterValidation = InputField.CharacterValidation.Alphanumeric;
             code.onValueChanged.AddListener(v =>
@@ -157,6 +179,8 @@ namespace LensStrike.App
         {
             get
             {
+                // 비워 두면 기본 이름을 쓰되, 그 이름을 입력값으로 저장하지는 않는다
+                if (string.IsNullOrWhiteSpace(name.text)) return Wire.CleanName(null);
                 var n = Wire.CleanName(name.text);
                 PlayerPrefs.SetString("ls.name", n);
                 return n;

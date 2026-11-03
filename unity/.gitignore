@@ -18,3 +18,4 @@
 # CoreTests(dotnet) 산출물
 /CoreTests/bin/
 /CoreTests/obj/
+/.utmp/
