@@ -219,6 +219,9 @@ namespace LensStrike.App
             // 경기 중에 다시 입장 메시지를 보내 HP를 되살리는 것을 막는다
             if (Match.Has(sender) && Match.Phase != Phase.Lobby) return;
             guestId = sender;
+            // 새로 들어온 참가자는 아직 좌표를 맞추지 않았다
+            GuestCalibrated = false;
+            RaiseGuestCalibration(false);
             if (Match.Has(sender)) Match.RemovePlayer(sender);
             Match.AddPlayer(sender, hello.Value.name, hello.Value.character);
             if (anchor.HasValue) SendTo(Msg.Anchor, Wire.Anchor(anchor.Value), NetworkDelivery.ReliableSequenced);
@@ -231,6 +234,7 @@ namespace LensStrike.App
             Match.RemovePlayer(clientId);
             guestId = null;
             GuestCalibrated = false;
+            RaiseGuestCalibration(false);
             if (Match.Phase != Phase.Lobby) Match.Phase = Phase.Lobby;
             RaiseStatus("상대가 나갔습니다. 다른 사람이 들어오기를 기다립니다.", false);
             Broadcast();

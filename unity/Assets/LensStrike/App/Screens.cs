@@ -204,6 +204,7 @@ namespace LensStrike.App
         public void SetBusy(bool busy)
         {
             foreach (var b in actions) b.interactable = !busy;
+            foreach (var (_, bg) in cards) bg.GetComponent<Button>().interactable = !busy;
         }
 
         public void Show(bool on) => Sheet.Show(on);

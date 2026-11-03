@@ -79,6 +79,17 @@ public class ArHitTests
     }
 
     [Fact]
+    public void 투사체가_머리_중심을_지나가면_헤드샷()
+    {
+        // 머리 중심을 정확히 관통하는 한 프레임 구간(출발점은 머리에서 0.5m 앞)
+        var head = Opp.HeadCenter;
+        var from = head - Vector3.UnitZ * 0.5f;
+        var to = head + Vector3.UnitZ * 0.6f;
+        Assert.Equal(HitZone.Head, ArHit.SweepProjectile(Opp, from, to, 0.05f));
+        Assert.Equal(0f, ArHit.SegmentSegmentDistance(from, to, head, head), 4);
+    }
+
+    [Fact]
     public void 폰이_수직이어도_예외_없이_폰_위치를_머리로_본다()
     {
         var b = ArHit.BodyFromPhone(new Vector3(1, 1.5f, 2), Vector3.UnitY);

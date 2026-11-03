@@ -74,6 +74,13 @@ namespace LensStrike.Core
             float aa = Vector3.Dot(d1, d1), ee = Vector3.Dot(d2, d2), ff = Vector3.Dot(d2, r);
             float s, u;
             var c = Vector3.Dot(d1, r);
+            if (ee <= 1e-9f)
+            {
+                // 대상이 점(머리 중심처럼 길이 0인 선분)이면 그 점을 광선 위로 투영한다
+                s = aa > 1e-9f ? Math.Clamp(-c / aa, 0f, 1f) : 0f;
+                t = s * maxT;
+                return Vector3.Distance(origin + d1 * s, a);
+            }
             var bb = Vector3.Dot(d1, d2);
             var denom = aa * ee - bb * bb;
             s = denom > 1e-9f ? Math.Clamp((bb * ff - c * ee) / denom, 0f, 1f) : 0f;

@@ -77,8 +77,9 @@ namespace LensStrike.App
             Ui.Place(toast.rectTransform, new Vector2(0.5f, 0), new Vector2(0, 300), new Vector2(1000, 120));
             toast.gameObject.AddComponent<Outline>().effectColor = new Color(0, 0, 0, 0.9f);
 
-            setup.Practice = () => Run(() => Task.FromResult<GameLink>(new PracticeLink(setup.PlayerName, setup.Character)));
-            setup.Host = () => Run(async () => await NetHostLink.OpenAsync(setup.PlayerName, setup.Character));
+            // 연결을 시작할 때의 캐릭터를 끝까지 쓴다(연결 중에 카드를 눌러도 방장 기록과 내 무기가 어긋나지 않게)
+            setup.Practice = () => Run(c => Task.FromResult<GameLink>(new PracticeLink(setup.PlayerName, c)));
+            setup.Host = () => Run(async c => await NetHostLink.OpenAsync(setup.PlayerName, c));
             setup.Join = code =>
             {
                 if (code.Length < 4)
@@ -86,7 +87,7 @@ namespace LensStrike.App
                     setup.SetStatus("참가 코드를 입력해 주세요.", true);
                     return;
                 }
-                Run(async () => await NetGuestLink.JoinAsync(code, setup.PlayerName, setup.Character));
+                Run(async c => await NetGuestLink.JoinAsync(code, setup.PlayerName, c));
             };
             lobby.Leave = Leave;
             lobby.SetAnchor = SaveAnchor;
@@ -122,16 +123,17 @@ namespace LensStrike.App
             setup.SetStatus("AR을 시작하지 못했습니다. 카메라 권한과 Google Play AR 서비스를 확인해 주세요.", true);
         }
 
-        private async void Run(Func<Task<GameLink>> open)
+        private async void Run(Func<CharacterId, Task<GameLink>> open)
         {
             if (busy) return;
             busy = true;
+            var character = setup.Character;
             setup.SetBusy(true);
             setup.SetStatus("연결하는 중…");
             try
             {
-                var link = await open();
-                Begin(link);
+                var link = await open(character);
+                Begin(link, character);
                 setup.SetStatus("준비 완료");
             }
             catch (Exception e)
@@ -147,12 +149,12 @@ namespace LensStrike.App
             }
         }
 
-        private void Begin(GameLink link)
+        private void Begin(GameLink link, CharacterId character)
         {
             hostAnchor = null;
             guestCalibrated = false;
             if (!link.IsPractice) ar.ResetCalibration();
-            play = new GamePlay(link, setup.Character, ar, hud, sfx, canvas);
+            play = new GamePlay(link, character, ar, hud, sfx, canvas);
             play.PhaseChanged = OnPhase;
             play.Updated = _ => RenderLobby();
             link.Status += (message, fatal) =>
